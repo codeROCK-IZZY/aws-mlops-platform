@@ -1,0 +1,132 @@
+# Local stack: the same services as on AWS, with SeaweedFS standing in for S3 and a self-hosted MLflow
+# server standing in for the SageMaker managed MLflow tracking server.
+#
+#   cp .env.example .env    # then set MLP_JWT_SECRET and the passwords
+#   docker compose up -d --build
+#   docker compose run --rm api python -m app.cli demo     # demo users + a year of data
+#
+# Dashboard http://localhost:8088 · API docs http://localhost:8000/api/docs · MLflow http://localhost:5000
+# Model server http://localhost:8080
+name: mlops-platform
+
+x-backend: &backend
+  build: ./backend
+  image: mlops-platform-backend:local
+  env_file: .env
+  environment: &backend-env
+    MLP_DATABASE_URL: postgresql+psycopg://mlp:${POSTGRES_PASSWORD}@postgres:5432/mlp
+    MLP_S3_ENDPOINT_URL: http://s3:8333
+    MLP_MLFLOW_TRACKING_URI: http://mlflow:5000
+    MLP_SERVING_URL: http://serving:8080
+    AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY}
+    AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY}
+    AWS_DEFAULT_REGION: us-east-1
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: mlp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: mlp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/local/postgres-init.sql:/docker-entrypoint-initdb.d/10-mlflow.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlp"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  # S3-compatible object store (SeaweedFS) standing in for Amazon S3. Credentials come from .env.
+  s3:
+    image: chrislusf/seaweedfs:4.31
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        cat > /tmp/s3.json <<JSON
+        {"identities": [{"name": "platform", "credentials": [{"accessKey": "$$S3_ACCESS_KEY", "secretKey": "$$S3_SECRET_KEY"}],
+                         "actions": ["Admin", "Read", "Write", "List", "Tagging"]}]}
+        JSON
+        exec weed server -dir=/data -s3 -s3.port=8333 -s3.config=/tmp/s3.json -master.volumeSizeLimitMB=1024 -volume.max=0
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+    volumes: [s3data:/data]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8333/healthz || exit 1"]
+      interval: 5s
+      retries: 30
+    restart: unless-stopped
+
+  # Creates the schema and the S3 buckets, then exits.
+  migrate:
+    build: ./backend
+    image: mlops-platform-backend:local
+    env_file: .env
+    environment: *backend-env
+    command: ["python", "-m", "app.cli", "migrate"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      s3: { condition: service_healthy }
+
+  # Tracking + registry. Artifacts are proxied through the server (--serve-artifacts), so clients
+  # never need storage credentials of their own for models.
+  mlflow:
+    image: mlops-platform-backend:local
+    env_file: .env
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://s3:8333
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY}
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri postgresql+psycopg://mlp:${POSTGRES_PASSWORD}@postgres:5432/mlflow
+      --artifacts-destination s3://mlp-artifacts/mlflow --serve-artifacts
+      --allowed-hosts mlflow:5000,localhost:5000,127.0.0.1:5000 --workers 2
+    ports: ["127.0.0.1:5000:5000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=3)"]
+      interval: 5s
+      retries: 30
+    restart: unless-stopped
+
+  api:
+    <<: *backend
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      mlflow: { condition: service_healthy }
+
+  worker:
+    <<: *backend
+    command: ["python", "-m", "app.cli", "worker"]
+    depends_on:
+      mlflow: { condition: service_healthy }
+
+  # The SageMaker-compatible model server (same image, `serve`). Serves the champion; /ping is 503
+  # until a first model has been promoted, and the worker tells it to reload after each promotion.
+  serving:
+    <<: *backend
+    command: ["serve"]
+    environment:
+      <<: *backend-env
+      MLP_CAPTURE_DB: "true"
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      mlflow: { condition: service_healthy }
+
+  web:
+    build: ./frontend
+    ports: ["127.0.0.1:8088:8080"]
+    depends_on: [api]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  s3data:

@@ -1,0 +1,280 @@
+{
+  "rows": [
+    {
+      "month": "2026-06",
+      "scenario": "none",
+      "champion": "1",
+      "monitor_status": "ok",
+      "champion_pr_auc": 0.804,
+      "static_pr_auc": 0.804,
+      "retrain": null,
+      "candidate": null,
+      "gates": null,
+      "failed_gates": [],
+      "promoted": false,
+      "drifted": [],
+      "max_psi": {
+        "psi": 0.0282,
+        "feature": "age_days"
+      }
+    },
+    {
+      "month": "2026-07",
+      "scenario": "sensor_drift",
+      "champion": "1",
+      "monitor_status": "alert",
+      "champion_pr_auc": 0.7237,
+      "static_pr_auc": 0.7237,
+      "retrain": "blocked",
+      "candidate": "2",
+      "gates": "failed",
+      "failed_gates": [
+        "improvement"
+      ],
+      "promoted": false,
+      "drifted": [
+        "vibration_mean",
+        "vibration_std"
+      ],
+      "max_psi": {
+        "psi": 0.5357,
+        "feature": "vibration_mean"
+      }
+    },
+    {
+      "month": "2026-08",
+      "scenario": "sensor_drift",
+      "champion": "1",
+      "monitor_status": "alert",
+      "champion_pr_auc": 0.7425,
+      "static_pr_auc": 0.7425,
+      "retrain": "succeeded",
+      "candidate": "3",
+      "gates": "passed",
+      "failed_gates": [],
+      "promoted": true,
+      "drifted": [
+        "vibration_mean",
+        "vibration_std"
+      ],
+      "max_psi": {
+        "psi": 0.6316,
+        "feature": "vibration_mean"
+      }
+    },
+    {
+      "month": "2026-09",
+      "scenario": "sensor_drift+fleet_mix",
+      "champion": "3",
+      "monitor_status": "alert",
+      "champion_pr_auc": 0.7719,
+      "static_pr_auc": 0.7037,
+      "retrain": "succeeded",
+      "candidate": "4",
+      "gates": "passed",
+      "failed_gates": [],
+      "promoted": true,
+      "drifted": [
+        "bearing_temp_rise",
+        "current_mean",
+        "equipment_type",
+        "pressure_mean",
+        "vibration_mean",
+        "vibration_std"
+      ],
+      "max_psi": {
+        "psi": 0.504,
+        "feature": "vibration_mean"
+      }
+    },
+    {
+      "month": "2026-10",
+      "scenario": "sensor_drift+fleet_mix+new_failure",
+      "champion": "4",
+      "monitor_status": "alert",
+      "champion_pr_auc": 0.3865,
+      "static_pr_auc": 0.3249,
+      "retrain": "blocked",
+      "candidate": "5",
+      "gates": "failed",
+      "failed_gates": [
+        "min_quality",
+        "slice_recall"
+      ],
+      "promoted": false,
+      "drifted": [
+        "bearing_temp_rise",
+        "current_mean",
+        "equipment_type",
+        "pressure_mean",
+        "vibration_mean",
+        "vibration_std"
+      ],
+      "max_psi": {
+        "psi": 0.3472,
+        "feature": "equipment_type"
+      }
+    },
+    {
+      "month": "2026-11",
+      "scenario": "sensor_drift+fleet_mix+new_failure",
+      "champion": "4",
+      "monitor_status": "alert",
+      "champion_pr_auc": 0.5271,
+      "static_pr_auc": 0.4896,
+      "retrain": "succeeded",
+      "candidate": "6",
+      "gates": "passed",
+      "failed_gates": [],
+      "promoted": true,
+      "drifted": [
+        "bearing_temp_rise",
+        "current_mean",
+        "equipment_type",
+        "pressure_mean",
+        "vibration_mean",
+        "vibration_std"
+      ],
+      "max_psi": {
+        "psi": 0.4133,
+        "feature": "equipment_type"
+      }
+    },
+    {
+      "month": "2026-12",
+      "scenario": "sensor_drift+fleet_mix+new_failure",
+      "champion": "6",
+      "monitor_status": "warn",
+      "champion_pr_auc": 0.6934,
+      "static_pr_auc": 0.4886,
+      "retrain": null,
+      "candidate": null,
+      "gates": null,
+      "failed_gates": [],
+      "promoted": false,
+      "drifted": [
+        "bearing_temp_rise",
+        "current_mean",
+        "equipment_type"
+      ],
+      "max_psi": {
+        "psi": 0.2334,
+        "feature": "equipment_type"
+      }
+    }
+  ],
+  "comparison": [
+    {
+      "month": "2026-06",
+      "scenario": "none",
+      "managed_version": "1",
+      "managed_pr_auc": 0.804,
+      "static_pr_auc": 0.804
+    },
+    {
+      "month": "2026-07",
+      "scenario": "sensor_drift",
+      "managed_version": "1",
+      "managed_pr_auc": 0.7237,
+      "static_pr_auc": 0.7237
+    },
+    {
+      "month": "2026-08",
+      "scenario": "sensor_drift",
+      "managed_version": "1",
+      "managed_pr_auc": 0.7425,
+      "static_pr_auc": 0.7425
+    },
+    {
+      "month": "2026-09",
+      "scenario": "sensor_drift+fleet_mix",
+      "managed_version": "3",
+      "managed_pr_auc": 0.7719,
+      "static_pr_auc": 0.7037
+    },
+    {
+      "month": "2026-10",
+      "scenario": "sensor_drift+fleet_mix+new_failure",
+      "managed_version": "4",
+      "managed_pr_auc": 0.3865,
+      "static_pr_auc": 0.3249
+    },
+    {
+      "month": "2026-11",
+      "scenario": "sensor_drift+fleet_mix+new_failure",
+      "managed_version": "4",
+      "managed_pr_auc": 0.5271,
+      "static_pr_auc": 0.4896
+    },
+    {
+      "month": "2026-12",
+      "scenario": "sensor_drift+fleet_mix+new_failure",
+      "managed_version": "6",
+      "managed_pr_auc": 0.6934,
+      "static_pr_auc": 0.4886
+    }
+  ],
+  "promotions": [
+    {
+      "version": "1",
+      "from": null,
+      "status": "approved",
+      "decided_by": "policy:first-model",
+      "gates": "passed"
+    },
+    {
+      "version": "3",
+      "from": "1",
+      "status": "approved",
+      "decided_by": "lifecycle-approver@example.com",
+      "gates": "passed"
+    },
+    {
+      "version": "4",
+      "from": "3",
+      "status": "approved",
+      "decided_by": "lifecycle-approver@example.com",
+      "gates": "passed"
+    },
+    {
+      "version": "6",
+      "from": "4",
+      "status": "approved",
+      "decided_by": "lifecycle-approver@example.com",
+      "gates": "passed"
+    }
+  ],
+  "summary": {
+    "detection": {
+      "sensor_drift": {
+        "starts": "2026-07",
+        "first_alert": "2026-07",
+        "delay_months": 0
+      },
+      "fleet_mix": {
+        "starts": "2026-09",
+        "first_alert": "2026-09",
+        "delay_months": 0
+      },
+      "new_failure": {
+        "starts": "2026-10",
+        "first_alert": "2026-10",
+        "delay_months": 0
+      }
+    },
+    "false_alarms": 0,
+    "stable_months_monitored": 1,
+    "retrains_triggered": 5,
+    "candidates_blocked_by_gates": 2,
+    "promotions": 3,
+    "mean_pr_auc_managed_during_drift": 0.6409,
+    "mean_pr_auc_static_during_drift": 0.5788,
+    "stable_replicas": {
+      "months": 12,
+      "alerts": 0,
+      "warnings": 0
+    },
+    "seconds": 537.8
+  },
+  "static_version": "1"
+}

@@ -1,0 +1,23 @@
+.env
+*.env.local
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+mlruns/
+mlartifacts/
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+terraform.tfvars
+backend.hcl

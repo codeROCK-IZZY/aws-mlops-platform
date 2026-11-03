@@ -1,0 +1,46 @@
+[project]
+name = "mlp-backend"
+version = "0.1.0"
+description = "AWS MLOps platform — data contracts, tracked training, promotion gates, drift monitoring, SageMaker deployment"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = [".venv", "migrations/script.py.mako"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM", "RUF"]
+ignore = [
+  "B008",   # FastAPI Depends()/Cookie() in defaults is idiomatic
+  "S101",   # assert is fine in tests and for internal invariants
+  "S608",   # SQL built only from generated identifiers (partition names), documented in place
+  "SIM905",  # word lists written as "a b c".split() read better than long list literals
+  "RUF001", "RUF002", "RUF003",  # unicode (°C, σ, –) in strings/comments is intentional
+  "E501",   # ruff format owns line length; the few longer lines are aligned tables marked "fmt: skip"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106", "S311", "E402"]  # conftest sets the environment before importing the app
+"scripts/*" = ["E402"]
+"app/serving.py" = ["S311"]  # random sampling of predictions to capture, not security
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+exclude = ["migrations/"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
+markers = ["slow: processes a repository end to end"]
